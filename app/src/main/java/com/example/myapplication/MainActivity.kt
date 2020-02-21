@@ -1,8 +1,6 @@
 package com.example.myapplication
 
 import android.os.Bundle
-import android.os.PersistableBundle
-import android.util.Log
 import android.view.MenuItem
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
@@ -24,7 +22,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         viewPagerAdapter = ViewPagerAdapter(supportFragmentManager)
         navigation.setOnNavigationItemSelectedListener(this)
         view_pager.addOnPageChangeListener(this)
-        view_pager.offscreenPageLimit = viewPagerAdapter.count -1
+        view_pager.offscreenPageLimit = viewPagerAdapter.count - 1
         view_pager.adapter = viewPagerAdapter
     }
 
@@ -58,12 +56,13 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         navigation.menu.getItem(position).isChecked = true
     }
 
-    inner class ViewPagerAdapter(fm: FragmentManager): FragmentStatePagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+    inner class ViewPagerAdapter(fm: FragmentManager) :
+        FragmentStatePagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
         private var positionNow = -1
         private val stack = Stack<Int>()
 
         override fun getItem(position: Int): Fragment {
-            return when(position) {
+            return when (position) {
                 0 -> HomeFragment()
                 1 -> DashBoardFragment()
                 2 -> NotificationsFragment()
@@ -92,29 +91,22 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
             }
             return -1
         }
-
-        fun isFirstLaunchHome() = stack.size == 1 && positionNow == 0
-
-        fun clear() {
-            stack.clear()
-            positionNow = -1
-        }
     }
 
     override fun onBackPressed() {
-        if(viewPagerAdapter.isFirstLaunchHome()) {
-            viewPagerAdapter.clear()
-            super.onBackPressed()
-        } else {
-            supportFragmentManager.fragments.forEach {
-                if (it.isVisible) {
-                    val position = viewPagerAdapter.getLastPositionFromStack()
-                    if (position >= 0) {
-                        view_pager.setCurrentItem(position, false)
-                        return
-                    }
+        supportFragmentManager.fragments.forEach {
+            if (it.isVisible) {
+                val position = viewPagerAdapter.getLastPositionFromStack()
+                if (position >= 0) {
+                    view_pager.setCurrentItem(position, false)
+                    return
+                }
+                if (it.childFragmentManager.backStackEntryCount > 0) {
+                    it.childFragmentManager.popBackStack()
+                    return
                 }
             }
         }
+        super.onBackPressed()
     }
 }
